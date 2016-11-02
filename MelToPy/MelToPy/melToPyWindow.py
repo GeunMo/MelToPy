@@ -3,23 +3,30 @@
 import maya.OpenMayaUI as OpenMayaUI
 import pymel.tools.mel2py as mel2Py
 import pymel.all as pm
-import PySide.QtGui as QtGui
-import PySide.QtCore as QtCore
-import PySide
+
+try:
+    import PySide
+    from PySide.QtGui import *
+    from PySide.QtCore import *
+    from shiboken import wrapInstance
+    PySide_Version = PySide.__version__
+except:
+    import PySide2
+    from PySide2.QtGui import *
+    from PySide2.QtCore import *
+    from PySide2.QtWidgets import *
+    from shiboken2 import wrapInstance
+    PySide_Version = PySide2.__version__
+    
 import platform
-from shiboken import wrapInstance
 import webbrowser
-
-import stylesheet
-import resources
-
 
 
 __version__ = 1.2
 
 def getMayaWindow():
     ptr = OpenMayaUI.MQtUtil.mainWindow()
-    return wrapInstance(long(ptr), QtGui.QMainWindow)
+    return wrapInstance(long(ptr), QMainWindow)
 
 def mayaToQtObject( inMayaUI ):
     ptr = OpenMayaUI.MQtUtil.findControl( inMayaUI )
@@ -28,35 +35,33 @@ def mayaToQtObject( inMayaUI ):
     if ptr is None:
         ptr= OpenMayaUI.MQtUtil.findMenuItem( inMayaUI )
     if ptr is not None:
-        return wrapInstance( long( ptr ), QtGui.QWidget )
+        return wrapInstance( long( ptr ), QWidget )
 
 
-class MelToPyMainWindow(QtGui.QMainWindow):
+class MelToPyMainWindow(QMainWindow):
     
     def __init__(self, parent=getMayaWindow()):
         super(MelToPyMainWindow, self).__init__(parent)
         
-        self.stylData  = stylesheet.darkorange
-        
         self.isPython = True
         
         self.setWindowTitle('Mel to python Window')
-        self.splitter = QtGui.QSplitter(QtCore.Qt.Horizontal)
+        self.splitter = QSplitter(Qt.Horizontal)
         self.setCentralWidget(self.splitter)
         
-        self.melWidget = QtGui.QWidget()
-        self.melLayout = QtGui.QVBoxLayout()
-        self.melLabel = QtGui.QLabel('Mel')
-        self.melTextEdit = QtGui.QTextEdit()
+        self.melWidget = QWidget()
+        self.melLayout = QVBoxLayout()
+        self.melLabel = QLabel('Mel')
+        self.melTextEdit = QTextEdit()
         self.melLayout.addWidget(self.melLabel)
         self.melLayout.addWidget(self.melTextEdit)
         self.melWidget.setLayout(self.melLayout)
         self.melLayout.setContentsMargins(10,3,3,3)
         
-        self.pyWidget = QtGui.QWidget()
-        self.pyLayout = QtGui.QVBoxLayout()
-        self.pyLabel  = QtGui.QLabel('Python')
-        self.pyTextEdit = QtGui.QTextEdit()
+        self.pyWidget = QWidget()
+        self.pyLayout = QVBoxLayout()
+        self.pyLabel  = QLabel('Python')
+        self.pyTextEdit = QTextEdit()
         self.pyTextEdit.setReadOnly(True)
         self.pyLayout.addWidget(self.pyLabel)
         self.pyLayout.addWidget(self.pyTextEdit)
@@ -76,7 +81,7 @@ class MelToPyMainWindow(QtGui.QMainWindow):
         operationMenu = self.menuBar().addMenu('Opera&tion')
         self.addActions(operationMenu, self.operationMenuActions)
         
-        optionActionGrp = QtGui.QActionGroup(self)
+        optionActionGrp = QActionGroup(self)
         toPython = self.createAction('To &Python', slot=self.toPython, icon=None, tip=None, checkable=True)
         toPython.setChecked(True)
         toPyMel  = self.createAction('To Py&Mel',  slot=self.toPyMel, icon=None, tip=None, checkable=True)
@@ -96,15 +101,14 @@ class MelToPyMainWindow(QtGui.QMainWindow):
         
         self.status = self.statusBar()
         self.status.showMessage("Ready", 5000)
-        self.setStyleSheet(self.stylData)
         self.setGeometry(400, 300, 500, 400)
         
         
     def createAction(self, text, slot=None, shortcut=None, icon=None,
                  tip=None, checkable=False, signal="triggered"):
-        action = QtGui.QAction(text, self)
+        action = QAction(text, self)
         if icon is not None:
-            action.setIcon(QtGui.QIcon(":/{}.png".format(icon)))
+            action.setIcon(QIcon(":/{}.png".format(icon)))
         if shortcut is not None:
             action.setShortcut(shortcut)
         if tip is not None:
@@ -170,16 +174,15 @@ class MelToPyMainWindow(QtGui.QMainWindow):
         self.status.showMessage('The conversion was completed.', 5000)
     
     def helpAbout(self):
-        QtGui.QMessageBox.about(self, "About MelToPy",
+        QMessageBox.about(self, "About MelToPy",
                 """<b>MelToPy</b> v {0}
                 <p>Copyright &copy; 2015-16 GuenMo-Kim (ximya@naver.com). 
                 All rights reserved.
                 <p>This application can be used to convert
                 mel to python or pymel.
-                <p>Python {1} - Qt {2} - PySide {3} - Maya {4} on {5}""".format(
+                <p>Python {1} - Qt {2} - PySide {3}""".format(
                 __version__, platform.python_version(),
-                QtCore.qVersion(), PySide.__version__, pm.versions.current(),
-                platform.system()))
+                qVersion(), PySide_Version))
 
     def helpHelp(self):
         url = 'https://vimeo.com/user32883343'
