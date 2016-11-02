@@ -88,6 +88,9 @@ instance/
 # Sphinx documentation
 docs/_build/
 
+# Sphinx themes
+docs/_themes/
+
 # PyBuilder
 target/
 
@@ -118,7 +121,6 @@ ENV/
 ### Eclipse ###
 
 .metadata
-bin/
 tmp/
 *.tmp
 *.bak
